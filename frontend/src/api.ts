@@ -126,7 +126,11 @@ export interface ReviewQueueItem {
   entities: string[];
 }
 
-const API_BASE = "http://127.0.0.1:8000/api";
+// Resolve backend API URL dynamically from Vite environment variables (e.g., Render, Vercel, Netlify)
+const RAW_BACKEND_URL = (import.meta.env.VITE_API_URL as string | undefined)?.trim() || "http://127.0.0.1:8000";
+const API_BASE = RAW_BACKEND_URL.endsWith("/api")
+  ? RAW_BACKEND_URL
+  : `${RAW_BACKEND_URL.replace(/\/+$/, '')}/api`;
 const DEFAULT_TIMEOUT_MS = 30000;
 
 async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs: number = DEFAULT_TIMEOUT_MS): Promise<Response> {
