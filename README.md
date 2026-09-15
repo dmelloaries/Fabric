@@ -2,7 +2,6 @@
 
 > A professional compliance workstation for financial institutions to explore, compare, and trace regulatory requirements across **Reserve Bank of India (RBI)** digital lending circulars.
 
-Built in response to the **RegulatoryFabric Engineering Assignment**, following the architecture specified in [`SYSTEM_DESIGN.md`](./SYSTEM_DESIGN.md) and [`Flowchart.drawio`](./Flowchart.drawio).
 
 ---
 
