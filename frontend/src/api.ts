@@ -240,8 +240,10 @@ export async function fetchSemanticDiff(v1: number, v2: number): Promise<Semanti
   return await res.json();
 }
 
-export async function fetchEntityMatrix(): Promise<{ entities: Entity[]; rows: MatrixRow[] }> {
-  const res = await fetchWithTimeout(`${API_BASE}/matrix`);
+export async function fetchEntityMatrix(docId?: number | null): Promise<{ entities: Entity[]; rows: MatrixRow[] }> {
+  const url = new URL(`${API_BASE}/matrix`);
+  if (docId) url.searchParams.append("doc_id", docId.toString());
+  const res = await fetchWithTimeout(url.toString());
   if (!res.ok) throw new Error("Failed to fetch entity matrix");
   return await res.json();
 }

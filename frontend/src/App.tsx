@@ -222,6 +222,8 @@ export function App() {
 
         {activeTab === 'matrix' && (
           <EntityMatrix
+            selectedDocId={selectedDocId}
+            documents={documents}
             onInspectClause={handleInspectClause}
             onOpenIngestModal={() => setIsIngestModalOpen(true)}
             hasDocuments={documents.length > 0}

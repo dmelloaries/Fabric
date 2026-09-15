@@ -13,16 +13,20 @@ import {
   TableRow
 } from '@/components/ui/table';
 import { fetchEntityMatrix } from '../api';
-import type { MatrixRow, Entity } from '../api';
+import type { MatrixRow, Entity, DocumentInfo } from '../api';
 import { exportMatrixToExcel } from '../lib/excelExport';
 
 interface EntityMatrixProps {
+  selectedDocId?: number | null;
+  documents?: DocumentInfo[];
   onInspectClause?: (clauseId: number) => void;
   onOpenIngestModal?: () => void;
   hasDocuments?: boolean;
 }
 
 export const EntityMatrix: React.FC<EntityMatrixProps> = ({
+  selectedDocId,
+  documents,
   onOpenIngestModal,
   hasDocuments
 }) => {
@@ -30,11 +34,19 @@ export const EntityMatrix: React.FC<EntityMatrixProps> = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadMatrix = async () => {
+  const currentDoc = documents?.find((d) => d.id === selectedDocId);
+
+  const loadMatrix = async (docId?: number | null) => {
+    const targetDocId = docId !== undefined ? docId : selectedDocId;
+    if (hasDocuments === false || targetDocId === null) {
+      setMatrixData({ entities: [], rows: [] });
+      setLoading(false);
+      return;
+    }
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchEntityMatrix();
+      const data = await fetchEntityMatrix(targetDocId);
       setMatrixData(data);
     } catch (e: any) {
       console.error("Failed to load entity matrix", e);
@@ -46,8 +58,8 @@ export const EntityMatrix: React.FC<EntityMatrixProps> = ({
   };
 
   useEffect(() => {
-    loadMatrix();
-  }, []);
+    loadMatrix(selectedDocId);
+  }, [selectedDocId, hasDocuments]);
 
   if (loading) {
     return (
@@ -77,7 +89,7 @@ export const EntityMatrix: React.FC<EntityMatrixProps> = ({
             <Button
               size="sm"
               variant="outline"
-              onClick={loadMatrix}
+              onClick={() => loadMatrix()}
               className="gap-1.5 text-xs font-semibold"
             >
               <RefreshCw className="w-3.5 h-3.5" />
@@ -166,10 +178,17 @@ export const EntityMatrix: React.FC<EntityMatrixProps> = ({
                 <LayoutGrid className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-slate-950">
-                  Entity Applicability & Passthrough Matrix
-                </h2>
-                <p className="text-xs text-slate-500 font-medium">
+                <div className="flex items-center gap-2.5">
+                  <h2 className="text-lg font-bold text-slate-950">
+                    Entity Applicability & Passthrough Matrix
+                  </h2>
+                  {currentDoc && (
+                    <Badge variant="outline" className="bg-sky-50 text-sky-700 border-sky-200 text-[10px] font-bold">
+                      {currentDoc.title}
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
                   Strict statutory mapping across Regulated Entities (Banks/NBFCs) and Agents (LSPs/DLAs)
                 </p>
               </div>

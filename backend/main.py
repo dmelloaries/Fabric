@@ -406,7 +406,7 @@ def get_diff_review_queue(v1_id: int, v2_id: int, db: Session = Depends(get_db))
 
 
 @app.get("/api/matrix")
-def get_entity_matrix(db: Session = Depends(get_db)):
+def get_entity_matrix(doc_id: Optional[int] = None, db: Session = Depends(get_db)):
     """
     Cross-party applicability matrix:
     Columns = Entities (Bank, NBFC, LSP, DLA, RE)
@@ -417,7 +417,7 @@ def get_entity_matrix(db: Session = Depends(get_db)):
     entity_legal_map = {e.id: e.legal_type for e in entities}
 
     # Fetch obligations with clause joined in 1 single fast query
-    obs = (
+    query = (
         db.query(
             Obligation.id,
             Obligation.obligation_type,
@@ -429,9 +429,11 @@ def get_entity_matrix(db: Session = Depends(get_db)):
         )
         .join(Clause, Obligation.clause_id == Clause.id)
         .filter(Obligation.status != "REJECTED")
-        .order_by(Clause.id, Obligation.id)
-        .all()
     )
+    if doc_id is not None:
+        query = query.filter(Clause.doc_id == doc_id)
+
+    obs = query.order_by(Clause.id, Obligation.id).all()
 
     # Fetch all associations in 1 single fast query
     assocs = db.query(ObligationEntity.obligation_id, ObligationEntity.entity_id, ObligationEntity.applicability_type).all()
